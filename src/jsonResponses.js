@@ -49,13 +49,13 @@ const addRecipe = (request, response, body) => {
   const responseJSON = {
     message: 'Name and age are both required.',
   };
-  console.log(`adding recipe`);
+  console.log('adding recipe');
 
   // check to make sure we have both fields
   // We might want more validation than just checking if they exist
   // This could easily be abused with invalid types (such as booleans, numbers, etc)
   // If either are missing, send back an error message as a 400 badRequest
-  if (!body.name ) {
+  if (!body.name) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }

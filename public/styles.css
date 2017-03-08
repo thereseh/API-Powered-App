@@ -1,0 +1,21 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500|Satisfy');
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: red;
+}
+
+#buttons {
+  margin:auto;
+  float: none;!important
+  text-align: auto;!important
+  align-content: center;!important
+}
+.btn btn-primary {
+  text-align: center;!important
+  align-content: center;!important
+  float: none;!important
+}

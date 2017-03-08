@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>API Powered App</title>
+ <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+</head>
+<body>
+<h1>Food is Life</h1>
+<script type="text/babel">
+
+let variables = [];
+
+const handleResponse = (xhr, parseResponse) => {
+   const content = document.querySelector('#content');
+  console.log(xhr.response);
+       switch(xhr.status) {
+        case 200: //success
+            content.innerHTML += JSON.stringify(JSON.parse(xhr.response).recipe);
+            console.dir(JSON.parse(xhr.response));
+          break;
+        case 404:
+          content.innerHTML = `<b>Resource Not Found</b><br><br>`;
+            content.innerHTML += "Message: The page you are looking for was not found.";
+            console.dir(JSON.parse(xhr.response));
+          break;
+        case 201:
+          content.innerHTML = `<b>Create</b><br><br>`;
+           console.dir(JSON.parse(xhr.response));
+           break;
+        case 204:
+          content.innerHTML = `<b>Updated (No Content)</b><br><br>`;
+          break;
+        default: //default other errors we are not handling in this example
+          break;
+      }
+    };
+
+ const sendPost = (e,nameForm) => {
+      //create a new Ajax request (remember this is asynchronous)
+      const xhr = new XMLHttpRequest();
+      //set the method (POST) and url (action field from form)
+      const act = '/addRecipe';
+      xhr.open('post', act);
+      
+      //set our request type to x-www-form-urlencoded
+      //which is one of the common types of form data. 
+      //This type has the same format as query strings key=value&key2=value2
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      //set our requested response type in hopes of a JSON response
+      xhr.setRequestHeader ('Accept', 'application/json');
+      
+      //set our function to handle the response
+      xhr.onload = () => handleResponse(xhr);
+      
+      //build our x-www-form-urlencoded format. Without ajax the 
+      //browser would do this automatically but it forcefully changes pages
+      //which we don't want.
+      //The format is the same as query strings, so key=value&key2=value2
+      //The 'name' fields from the inputs are the variable names sent to
+      //the server. 
+      //So ours might look like  name=test&age=22
+      //Again the 'name' fields in the form are the variable names in the string
+      //and the variable names the server will look for.
+      console.log(variables);
+      const formData = `name=${variables[0]}&ingredients=${variables[1]}&category=${variables[2]}`;
+      
+      //send our request with the data
+      xhr.send(formData);
+    
+      //prevent the browser's default action (to send the form on its own)
+      e.preventDefault();
+      //return false to prevent the browser from trying to change page
+      return false;
+    };
+
+  const requestUpdate = (e, method) => {
+    const url = "/getRecipe";
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('accept', 'application/json');
+      
+    if(method === 'get') {
+      xhr.onload = () => handleResponse(xhr, true);
+    } else {
+      xhr.onload = () => handleResponse(xhr, false);
+    }
+    
+    xhr.send();
+      
+    e.preventDefault();
+    return false;
+  };
+  const init = () => {
+   const add = document.querySelector('#saveBtn');
+    add.addEventListener('click', (e) => {
+      variables.push(document.querySelector('#inputName').value);
+      variables.push(document.querySelector('#ingredients').value);
+      variables.push(document.querySelector('#inputCat').value);
+    $('#myModal').modal('hide');
+    $('#myModal').find("input,textarea").val('').end();
+
+    sendPost(e,'post');
+  });
+    
+    const get = document.querySelector('#getBtn');
+    get.addEventListener('click', (e) => {
+    requestUpdate(e,'get');
+  });
+  };
+
+    window.onload = init;
+  </script>
+  <div id="buttons">
+    <button type="button" id="addBtn" data-toggle="modal" data-target="#myModal" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">
+    Add Recipe
+    </button>
+    <button type="button" id="getBtn" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">
+    Get Recipes
+    </button>
+  </div>
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Add Recipe</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Category <span class="caret"></span></button>
+        <ul class="dropdown-menu">
+          <li><p>No categories</p></li>
+        </ul>
+      </div><!-- /btn-group -->
+          <br>
+          <div class="form-group">
+          <label for="inputName">Or add Category:</label>
+          <input class="form-control" placeholder="add a category" type="text" id="inputCat">
+          </div>
+        <div class="form-group">
+          <label for="inputName">Recipe Name:</label>
+          <input class="form-control" placeholder="add a name!" type="text" id="inputName">
+          </div>
+          <br>
+          <div class="form-group">
+          <label for ="inputIng">Ingredients:</label>
+            <textarea class="form-control" placeholder="Add your secret ingredients..." type="text" rows="5" id="ingredients"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="saveBtn" class="btn btn-primary">Save changes</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+  <div id="content"></div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <link rel="stylesheet" type="text/css" href="/styles.css">
+</body>
+</html>

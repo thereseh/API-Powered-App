@@ -1,0 +1,33 @@
+{
+  "name": "project-1",
+  "version": "1.0.0",
+  "engines": {
+    "node": "7.4.0",
+    "npm": "4.0.5"
+  },
+  "description": "First project in Rich Media App Development II.",
+  "main": ".src/server.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src",
+    "test": "echo \"No Tests\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thereseh/API-Powered-App.git"
+  },
+  "author": "Therese Henriksson",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/thereseh/API-Powered-App/issues"
+  },
+  "homepage": "https://github.com/thereseh/API-Powered-App#readme",
+  "dependencies": {
+    "express": "^4.15.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.17.1",
+    "eslint-config-airbnb": "^14.1.0",
+    "eslint-plugin-import": "^2.2.0"
+  }
+}

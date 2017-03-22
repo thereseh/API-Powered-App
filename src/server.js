@@ -30,18 +30,19 @@ const handleParams = (request, response, parsedUrl) => {
     // combine our byte array (using Buffer.concat)
     // and convert it to a string value (in this instance)
     const bodyString = Buffer.concat(body).toString();
+    console.dir(bodyString);
+
     // since we are getting x-www-form-urlencoded data
     // the format will be the same as querystrings
     // Parse the string into an object by field name
     const bodyParams = query.parse(bodyString);
+    console.dir(bodyParams);
     // pass to our addUser function
     if (parsedUrl.pathname === '/addRecipe') {
       jsonHandler.addRecipe(request, res, bodyParams);
-    }
-    if (parsedUrl.pathname === '/removeRecipe') {
+    } else if (parsedUrl.pathname === '/removeRecipe') {
       jsonHandler.removeRecipe(request, res, bodyParams);
-    }
-    if (parsedUrl.pathname === '/getCategory') {
+    } else if (parsedUrl.pathname === '/getCategory') {
       jsonHandler.getCategory(request, res, bodyParams);
     }
   });

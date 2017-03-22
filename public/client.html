@@ -66,10 +66,15 @@
   
   // to break up the different responses
   const handleResponse = (xhr, parseResponse) => {
-    console.log(xhr.response);
         switch(xhr.status) {
          case 200: //success
-            responsObj = JSON.parse(xhr.response)["recipe"];
+            let search;
+            if (JSON.parse(xhr.response)["recipe"]) {
+              search = JSON.parse(xhr.response)["recipe"]
+            } else if (JSON.parse(xhr.response)["temp"]) {
+              search = JSON.parse(xhr.response)["temp"]
+            }
+            responsObj = search;
             let num = 0;
             // fills the content
             content.innerHTML = "<div class='row' id='c'>";
@@ -93,18 +98,23 @@
               num++;
               document.querySelector(`#well${key}`).style.background = `${color}`;
             };
-                                    
-             content.addEventListener('click', (e) => {
-               if (e.target.id.includes('edit')) {  editRecipe(e, e.target.id);
-                }
-               
-               if (e.target.id.includes('remove')) { removeCall(e, e.target.id);
+            
+            // try to catch the dynamically created buttons above
+            // to remove and edit
+            // not super smooth
+            row.addEventListener('click', (e) => {
+              if (e.target.id.includes('edit')) {  
+                editRecipe(e, e.target.id);
+              } 
+              if (e.target.id.includes('remove')) { 
+                removeCall(e, e.target.id);
               }
-                });
+            });
+
            break;
          case 404:
-           content.innerHTML = `<b>Resource Not Found</b><br><br>`;
-             content.innerHTML += "Message: The page you are looking for was not found.";
+          content.innerHTML = `<b>Resource Not Found</b><br><br>`;
+          content.innerHTML += "Message: The page you are looking for was not found.";
            break;
          case 201:
             responsObj = JSON.parse(xhr.response);
@@ -112,7 +122,7 @@
             dropDown();
             break;
          case 204:
-           content.innerHTML = `<b>Recipe Successfully Upated!</b><br><br>`;
+           content.innerHTML = `<b>Updated!</b><br><br>`;
            break;
          default: //default other errors we are not handling in this example
            break;
@@ -120,25 +130,24 @@
       };
 
   // post request, creates recipes
-  const sendPost = (e,nameForm) => {
+  const sendPost = (e) => {
       //create a new Ajax request (remember this is asynchronous)
       const xhr = new XMLHttpRequest();
       //set the method (POST) and url (action field from form)
-      const act = '/addRecipe';
-      xhr.open('post', act);
+      const url = '/addRecipe';
+      xhr.open('post', url);
       
       //set our request type to x-www-form-urlencoded
       //which is one of the common types of form data. 
       //This type has the same format as query strings key=value&key2=value2
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
       //set our requested response type in hopes of a JSON response
-      xhr.setRequestHeader ('Accept', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
       
       //set our function to handle the response
       xhr.onload = () => handleResponse(xhr, false);
       
       const formData = `name=${variables[0]}&ingredients=${variables[1]}&category=${variables[2]}&notes=${variables[3]}&id=${variables[4]}&color=${variables[5]}`;
-      
       //send our request with the data
       xhr.send(formData);
     
@@ -153,21 +162,20 @@
    const removePost = (e, removeId) => {
       //create a new Ajax request (remember this is asynchronous)
       const xhr = new XMLHttpRequest();
-      const act = '/removeRecipe';
-      xhr.open('delete', act);
+      const url = '/removeRecipe';
+      xhr.open('delete', url);
       
       //set our request type to x-www-form-urlencoded
       //which is one of the common types of form data. 
       //This type has the same format as query strings key=value&key2=value2
       xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
       //set our requested response type in hopes of a JSON response
-      xhr.setRequestHeader ('Accept', 'application/json');
+      xhr.setRequestHeader('Accept', 'application/json');
       
       //set our function to handle the response
       xhr.onload = () => handleResponse(xhr, false);
       
       const formData = `id=${removeId}`;
-      
       //send our request with the data
       xhr.send(formData);
     
@@ -180,17 +188,17 @@
 
   // request to sort the categories
   const requestSorted = (e, method, sort) => {
-    const url = '/getCategory';
     const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.setRequestHeader('accept', 'application/json');
-      
-    if(method === 'get') {
-      xhr.onload = () => handleResponse(xhr, true);
-    }
+    const url = '/getCategory';
+    xhr.open('post', url);
     
-    const formData = `category=${sort[0].innerText}`;
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      //set our requested response type in hopes of a JSON response
+    xhr.setRequestHeader('Accept', 'application/json');
       
+    xhr.onload = () => handleResponse(xhr, true);
+
+    const formData = `cat=${sort}`;
       //send our request with the data
     xhr.send(formData);
           
@@ -211,6 +219,7 @@
       xhr.onload = () => handleResponse(xhr, false);
     }
     
+    editList = []
     xhr.send();
       
     e.preventDefault();
@@ -237,8 +246,8 @@
   
   // a new category is added, store it and change the dropdown
   const newCategory = (category) => {
-    document.querySelector('#inputCat').value = category[0].innerText;
-    document.querySelector('#dropDown').value = category[0].innerText;
+    document.querySelector('#inputCat').value = category;
+    document.querySelector('#dropDown').value = category;
   };
 
   const init = () => {
@@ -249,7 +258,7 @@
     const color = document.querySelector('#colorDrop');
     const sort = document.querySelector('#sortDrop');
     content = document.querySelector('#content');
-
+    
     // stores all input for recipe
     add.addEventListener('click', (e) => {
       if (!updating) {
@@ -266,7 +275,7 @@
       $('#myModal').modal('hide');
       $('#myModal').find("input,textarea").val('').end();
       //send post request
-      sendPost(e,'post');
+      sendPost(e);
       updating = false;
       document.querySelector('.modal-header').style.backgroundColor = '#e5e5e5';
       editList = [];
@@ -274,12 +283,12 @@
     
     // get item from category dropdown
    drop.addEventListener('click', (e) => {
-      newCategory($('#catDrop li').val($(this).html()));
+      newCategory(e.target.innerHTML);
    });
     
     // get item from sort dropdown
     sort.addEventListener('click', (e) => {
-      requestUpdate(e,'get', $('#sortDrop li').val($(this).html()));
+      requestSorted(e,'get', e.target.innerHTML);
    });
       
   // change color of modal, or store the custom color

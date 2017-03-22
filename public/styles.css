@@ -78,6 +78,7 @@ h3 {
 
 #c {
   width: 95%;
+  text-align: left;
   align-content: center;
 }
 
@@ -91,6 +92,10 @@ h3 {
 
 #labelColor {
   display: none;
+}
+
+#content {
+  text-align: center;
 }
 
 header {

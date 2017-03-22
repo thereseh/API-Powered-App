@@ -1,21 +1,111 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto:400,500|Satisfy');
+@import url('https://fonts.googleapis.com/css?family=Roboto:400,500|Playfair+Display:700');
 body {
   font-family: 'Roboto', sans-serif;
 }
 
 h1 {
+  font-family: 'Roboto', sans-serif;
   text-align: center;
-  color: red;
+  font-size: 40px;
+  margin-bottom: 0px;
+  margin-top: 1px;
+  display: inline-block;
+  float: left;
+  margin-left: 70px;
 }
 
-#buttons {
-  margin:auto;
+h3 {
+  margin-top: 0;
+}
+
+.row {
+  margin:auto;!important
   float: none;!important
   text-align: auto;!important
   align-content: center;!important
 }
 .btn btn-primary {
+  margin:auto;!important
   text-align: center;!important
   align-content: center;!important
   float: none;!important
+}
+
+#addBtn {
+  cursor: pointer;
+  background-color: transparent;
+  text-decoration: none;
+  border:none;
+}
+
+#nav {
+  display: inline-block;
+  float: right;
+  height: auto;
+}
+
+#sortGroup {
+  margin-left: 10px;
+  margin-right: 250px;
+  margin-bottom: 0;
+}
+
+#navBtn {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 15px;
+  float: right;
+  font-size: 16px;
+  color:white;
+  font-family: 'Roboto', sans-serif;
+}
+
+#colorDrop > li > a {
+  height: 30px;
+}
+
+#colorDrop > li > a:hover {
+  background-color: white;
+}
+
+#addBtn:hover {
+  color:#ffd699;
+}
+
+#navBtn > p{
+  display: inline-block;
+}
+
+#c {
+  width: 95%;
+  align-content: center;
+}
+
+#inputId {
+  display: none;
+}
+
+#inputColor {
+  display: none;
+}
+
+#labelColor {
+  display: none;
+}
+
+header {
+  height: 90px;
+  margin:auto;
+  text-align: center;
+  align-content: center;
+  float: none;
+  margin-bottom: 30px;
+  background-color: #bfbfbf;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.btn-group {
+  margin-right: 5px;
+  margin-bottom: 30px;
 }

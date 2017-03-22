@@ -1,43 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>API Powered App</title>
- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <title>Recipe Book!</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="/styles.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
-</head>
-<body>
-<h1>Food is Life</h1>
-<script type="text/babel">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
+  </head>
+  <header>
+    <div id='#nav'>
+      <h1>My Recipes</h1>
+      <div id="navBtn">
+      <input type="submit" value="Add Recipe" id="addBtn">
+      <p> | </p>
+      <!-- Single button -->
+     <div class="btn-group" id="sortGroup">
+     <button type="button" class="btn btn-default" id="getBtn">Get All Recipes</button>
+     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="sort">
+      <span class="caret"></span>
+      <span class="sr-only">Toggle Dropdown</span>
+      </button>
+      <ul class="dropdown-menu" id="sortDrop">
+        <li><a href='#'>Miscellaneous</a></li>
+      </ul>
+        </div>
+    </div>
+    </div>
+  </header>
+  <body>
+  <script type="text/babel">
 
-let variables = [];
+  let variables = [];
+  let editList = [];
+  let categories = {};
+  let id;
+  let responsObj, obj, ing, cat, notes, name, color;
+  let updating = false;
+  let content;
 
-const handleResponse = (xhr, parseResponse) => {
-   const content = document.querySelector('#content');
-  console.log(xhr.response);
-       switch(xhr.status) {
-        case 200: //success
-            content.innerHTML += JSON.stringify(JSON.parse(xhr.response).recipe);
-            console.dir(JSON.parse(xhr.response));
-          break;
-        case 404:
-          content.innerHTML = `<b>Resource Not Found</b><br><br>`;
-            content.innerHTML += "Message: The page you are looking for was not found.";
-            console.dir(JSON.parse(xhr.response));
-          break;
-        case 201:
-          content.innerHTML = `<b>Create</b><br><br>`;
-           console.dir(JSON.parse(xhr.response));
+  // takes the specific ID of the edit button
+  // that allows to find which elements to take from array
+  // so you can edit the recipe, ID stays the same
+  const editRecipe = (e, button_id) => {
+    let num = button_id.slice(-1);
+    dropDown();
+    updating = true;
+    $('#myModal').modal('show'); 
+    document.querySelector('#inputName').value = editList[num].name;
+    document.querySelector('#ingredients').value = editList[num].ing;
+    document.querySelector('#inputCat').value = editList[num].cat;
+    document.querySelector('#inputNotes').value = editList[num].notes;
+    document.querySelector('#inputId').value = editList[num].id;
+    document.querySelector('#inputColor').value = editList[num].color;
+    
+    // set specific color of header
+    document.querySelector('.modal-header').style.backgroundColor = editList[num].color;
+  };
+
+  // call to remove recipe
+  // button has specific ID used to figure out which ID to use
+  const removeCall = (e, button_id) => {
+     let num = button_id.slice(-1);
+    
+    removePost(e, editList[num].id);
+  };
+  
+  // to break up the different responses
+  const handleResponse = (xhr, parseResponse) => {
+    console.log(xhr.response);
+        switch(xhr.status) {
+         case 200: //success
+            responsObj = JSON.parse(xhr.response)["recipe"];
+            let num = 0;
+            // fills the content
+            content.innerHTML = "<div class='row' id='c'>";
+            let row = document.querySelector("#c");
+            for (let key in responsObj) {
+              // get all the indo
+              obj = responsObj[key];
+              name = obj['name'];
+              ing = obj['ingredients'];
+              cat = obj['category'];
+              notes = obj['notes'];
+              id = obj['id'];
+              color = obj['color'];
+              // store as object to push to array
+              let r = {id: id, name: name, ing: ing, cat: cat, notes: notes, color: color}
+              editList.push(r);
+              
+              // make a cluser of html stuff, creates layout
+              // has individual IDs for formatting
+              row.innerHTML += "<div class='col-sm-4'><div class='well' id=well"+key+"><h3>" + key + "<button type='button' class='btn btn-default pull-right' data-toggle='collapse' href=#" + key + " aria-expanded='false' aria-controls=" + key + "><span class='glyphicon glyphicon-menu-down' aria-hidden='true'></span></button></h3><div class='collapse' id=" + key + "><br><b>Ingredients: </b> " + ing + "<br><br><b>Notes: </b>" + notes + "<br><button type='button' class='btn btn-default pull-right' id=removeBtn"+num+"><span class='glyphicon glyphicon-trash' aria-hidden='true'></span></button><button type='button' id=edit"+num+" class='btn btn-default pull-right'>Edit</button><br><br></div></div></div>";          
+              num++;
+              document.querySelector(`#well${key}`).style.background = `${color}`;
+            };
+                                    
+             content.addEventListener('click', (e) => {
+               if (e.target.id.includes('edit')) {  editRecipe(e, e.target.id);
+                }
+               
+               if (e.target.id.includes('remove')) { removeCall(e, e.target.id);
+              }
+                });
            break;
-        case 204:
-          content.innerHTML = `<b>Updated (No Content)</b><br><br>`;
-          break;
-        default: //default other errors we are not handling in this example
-          break;
-      }
-    };
+         case 404:
+           content.innerHTML = `<b>Resource Not Found</b><br><br>`;
+             content.innerHTML += "Message: The page you are looking for was not found.";
+           break;
+         case 201:
+            responsObj = JSON.parse(xhr.response);
+            categories = responsObj["category"];
+            dropDown();
+            break;
+         case 204:
+           content.innerHTML = `<b>Recipe Successfully Upated!</b><br><br>`;
+           break;
+         default: //default other errors we are not handling in this example
+           break;
+        }
+      };
 
- const sendPost = (e,nameForm) => {
+  // post request, creates recipes
+  const sendPost = (e,nameForm) => {
       //create a new Ajax request (remember this is asynchronous)
       const xhr = new XMLHttpRequest();
       //set the method (POST) and url (action field from form)
@@ -52,19 +135,38 @@ const handleResponse = (xhr, parseResponse) => {
       xhr.setRequestHeader ('Accept', 'application/json');
       
       //set our function to handle the response
-      xhr.onload = () => handleResponse(xhr);
+      xhr.onload = () => handleResponse(xhr, false);
       
-      //build our x-www-form-urlencoded format. Without ajax the 
-      //browser would do this automatically but it forcefully changes pages
-      //which we don't want.
-      //The format is the same as query strings, so key=value&key2=value2
-      //The 'name' fields from the inputs are the variable names sent to
-      //the server. 
-      //So ours might look like  name=test&age=22
-      //Again the 'name' fields in the form are the variable names in the string
-      //and the variable names the server will look for.
-      console.log(variables);
-      const formData = `name=${variables[0]}&ingredients=${variables[1]}&category=${variables[2]}`;
+      const formData = `name=${variables[0]}&ingredients=${variables[1]}&category=${variables[2]}&notes=${variables[3]}&id=${variables[4]}&color=${variables[5]}`;
+      
+      //send our request with the data
+      xhr.send(formData);
+    
+      variables = [];
+      //prevent the browser's default action (to send the form on its own)
+      e.preventDefault();
+      //return false to prevent the browser from trying to change page
+      return false;
+    };
+
+    // removes a specific recipe using ID
+   const removePost = (e, removeId) => {
+      //create a new Ajax request (remember this is asynchronous)
+      const xhr = new XMLHttpRequest();
+      const act = '/removeRecipe';
+      xhr.open('delete', act);
+      
+      //set our request type to x-www-form-urlencoded
+      //which is one of the common types of form data. 
+      //This type has the same format as query strings key=value&key2=value2
+      xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+      //set our requested response type in hopes of a JSON response
+      xhr.setRequestHeader ('Accept', 'application/json');
+      
+      //set our function to handle the response
+      xhr.onload = () => handleResponse(xhr, false);
+      
+      const formData = `id=${removeId}`;
       
       //send our request with the data
       xhr.send(formData);
@@ -72,11 +174,33 @@ const handleResponse = (xhr, parseResponse) => {
       //prevent the browser's default action (to send the form on its own)
       e.preventDefault();
       //return false to prevent the browser from trying to change page
+      variables = [];
       return false;
     };
 
+  // request to sort the categories
+  const requestSorted = (e, method, sort) => {
+    const url = '/getCategory';
+    const xhr = new XMLHttpRequest();
+    xhr.open(method, url);
+    xhr.setRequestHeader('accept', 'application/json');
+      
+    if(method === 'get') {
+      xhr.onload = () => handleResponse(xhr, true);
+    }
+    
+    const formData = `category=${sort[0].innerText}`;
+      
+      //send our request with the data
+    xhr.send(formData);
+          
+    e.preventDefault();
+    return false;
+  };
+
+  // request to get all recipes
   const requestUpdate = (e, method) => {
-    const url = "/getRecipe";
+    const url = '/getRecipe';
     const xhr = new XMLHttpRequest();
     xhr.open(method, url);
     xhr.setRequestHeader('accept', 'application/json');
@@ -92,62 +216,150 @@ const handleResponse = (xhr, parseResponse) => {
     e.preventDefault();
     return false;
   };
+
+  // this updates the dropdown lists,
+  // takes elements from category array which is
+  // populated each time a user creates a new category
+  const dropDown = () => {
+    if (Object.keys(categories).length > 0) {
+    let dropdown = document.querySelector('#catDrop');
+    let sort = document.querySelector('#sortDrop');
+    sort.innerHTML = '';
+    dropdown.innerHTML = '';
+    // adds list items
+    for (let key in categories) {
+      // Append the element to the end of Array list
+      dropdown.innerHTML += "<li><a href='#'>" + categories[key] + "</a></li>";
+      sort.innerHTML += "<li><a href='#'>" + categories[key] + "</a></li>";
+    };
+    }
+  };
+  
+  // a new category is added, store it and change the dropdown
+  const newCategory = (category) => {
+    document.querySelector('#inputCat').value = category[0].innerText;
+    document.querySelector('#dropDown').value = category[0].innerText;
+  };
+
   const init = () => {
-   const add = document.querySelector('#saveBtn');
+    const add = document.querySelector('#saveBtn');
+    const open = document.querySelector('#addBtn');
+    const get = document.querySelector('#getBtn');
+    const drop = document.querySelector('#catDrop');
+    const color = document.querySelector('#colorDrop');
+    const sort = document.querySelector('#sortDrop');
+    content = document.querySelector('#content');
+
+    // stores all input for recipe
     add.addEventListener('click', (e) => {
+      if (!updating) {
+      document.querySelector('#inputId').value = document.querySelector('#inputName').value
+      }
       variables.push(document.querySelector('#inputName').value);
       variables.push(document.querySelector('#ingredients').value);
       variables.push(document.querySelector('#inputCat').value);
-    $('#myModal').modal('hide');
-    $('#myModal').find("input,textarea").val('').end();
+      variables.push(document.querySelector('#inputNotes').value);
+      variables.push(document.querySelector('#inputId').value);
+      variables.push(document.querySelector('#inputColor').value);
 
-    sendPost(e,'post');
-  });
+      // hide and clean out modal
+      $('#myModal').modal('hide');
+      $('#myModal').find("input,textarea").val('').end();
+      //send post request
+      sendPost(e,'post');
+      updating = false;
+      document.querySelector('.modal-header').style.backgroundColor = '#e5e5e5';
+      editList = [];
+    }); 
     
-    const get = document.querySelector('#getBtn');
+    // get item from category dropdown
+   drop.addEventListener('click', (e) => {
+      newCategory($('#catDrop li').val($(this).html()));
+   });
+    
+    // get item from sort dropdown
+    sort.addEventListener('click', (e) => {
+      requestUpdate(e,'get', $('#sortDrop li').val($(this).html()));
+   });
+      
+  // change color of modal, or store the custom color
+    color.addEventListener('click', (e) => {
+      if(e.target.attributes[1].value !== "custom") {
+        document.querySelector('.modal-header').style.backgroundColor = e.target.attributes[1].value;
+        document.querySelector('#inputColor').value = e.target.attributes[1].value;
+        document.querySelector('.modal-content').style.overflow = "hidden";
+      } else {
+        document.querySelector('#labelColor').style.display = "inline-block";
+        document.querySelector('#inputColor').style.display = "inline-block"; 
+      }
+   });
+    
+    // opens the modal
+    open.addEventListener('click', (e) => {
+      $('#myModal').modal('show');  
+    }); 
+
+    // get all recipes
     get.addEventListener('click', (e) => {
-    requestUpdate(e,'get');
-  });
+      requestUpdate(e,'get');
+    });
   };
 
     window.onload = init;
   </script>
-  <div id="buttons">
-    <button type="button" id="addBtn" data-toggle="modal" data-target="#myModal" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">
-    Add Recipe
-    </button>
-    <button type="button" id="getBtn" data-loading-text="Loading..." class="btn btn-primary" autocomplete="off">
-    Get Recipes
-    </button>
-  </div>
   <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true"></span></button>
         <h4 class="modal-title">Add Recipe</h4>
       </div>
       <div class="modal-body">
         <form>
-          <div class="input-group-btn">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Category <span class="caret"></span></button>
-        <ul class="dropdown-menu">
-          <li><p>No categories</p></li>
+          <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" id="dropDown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Category <span class="caret"></span></button>
+        <ul class="dropdown-menu" id="catDrop">
+          <li><a href='#'>Miscellaneous</a></li>
         </ul>
-      </div><!-- /btn-group -->
+          </div>
+            <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" id="dropDown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Color <span class="caret"></span></button>
+        <ul class="dropdown-menu" id="colorDrop">
+          <li><a href="#" data-value="#ffe6e6" style="background-color:#ffe6e6"></a></li>
+          <li><a href="#" data-value="#c2f0c2" style="background-color:#c2f0c2"></a></li>
+          <li><a href="#" data-value="#ffffcc" style="background-color:#ffffcc"></a></li>
+          <li><a href="#" data-value="#ccffff" style="background-color:#ccffff"></a></li>
+          <li><a href="#" data-value="#b3d1ff" style="background-color:#b3d1ff"></a></li>
+          <li><a href="#" data-value="#d9b3ff" style="background-color:#d9b3ff"></a></li>
+          <li><a href="#" data-value="#ffccff" style="background-color:#ffccff"></a></li>
+          <li role="separator" class="divider"></li>
+          <li><a href="#" data-value="custom">Add Color</a></li>
+        </ul>
+          </div><!-- /btn-group -->
           <br>
           <div class="form-group">
-          <label for="inputName">Or add Category:</label>
-          <input class="form-control" placeholder="add a category" type="text" id="inputCat">
+          <label for="inputName" id="labelColor">Color:</label>
+          <input class="form-control" placeholder="Ex. red or #b3d1ff" type="text" id="inputColor">
+          </div>
+          <div class="form-group">
+          <label for="inputName" id="labelCat">Category:</label>
+          <input class="form-control" placeholder="recipe category" type="text" id="inputCat">
           </div>
         <div class="form-group">
           <label for="inputName">Recipe Name:</label>
-          <input class="form-control" placeholder="add a name!" type="text" id="inputName">
+          <input class="form-control" placeholder="recipe name" type="text" id="inputName">
           </div>
           <br>
           <div class="form-group">
-          <label for ="inputIng">Ingredients:</label>
-            <textarea class="form-control" placeholder="Add your secret ingredients..." type="text" rows="5" id="ingredients"></textarea>
+          <label for="inputIng">Ingredients:</label>
+            <textarea class="form-control" placeholder="Add your secret ingredients..." type="text" rows="3" id="ingredients"></textarea>
+          </div>
+           <div class="form-group">
+          <label for="inputNotes">Notes:</label>
+            <textarea class="form-control" placeholder="Notes/Directions..." type="text" rows="5" id="inputNotes"></textarea>
+          </div>
+           <div class="form-group">
+          <input class="form-control" placeholder="recipe category" type="text" id="inputId">
           </div>
         </form>
       </div>
@@ -162,6 +374,5 @@ const handleResponse = (xhr, parseResponse) => {
   <div id="content"></div>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-  <link rel="stylesheet" type="text/css" href="/styles.css">
 </body>
 </html>

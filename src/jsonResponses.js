@@ -39,12 +39,9 @@ const removeRecipe = (request, response, body) => {
   // update etag since a change has been made
   etag = crypto.createHash('sha1').update(JSON.stringify(recipe));
   digest = etag.digest('hex');
- 
-  let responseCode = 204;
-  
+  const responseCode = 204;
   if (request.headers['if-none-match'] === digest) {
     console.log(request.headers['if-none-match']);
-
     return respondJSONMeta(request, response, 304);
   }
   return respondJSONMeta(request, response, responseCode);
@@ -113,7 +110,7 @@ const addRecipe = (request, response, body) => {
 // returns all categories for dropdown
 // searches through the recipe object to find the key with the value needed
 const getCategory = (request, response, body) => {
-  let temp = {};
+  const temp = {};
   Object.keys(recipe).forEach((key) => {
     const value = recipe[key].category;
     if (value === body.cat) {
